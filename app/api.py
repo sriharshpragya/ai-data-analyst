@@ -305,6 +305,7 @@ async def get_examples():
                     "Show me top 5 products by revenue as a bar chart",
                     "Monthly revenue trend for last 6 months as a line chart",
                     "Sales distribution by category as a pie chart",
+                    "Graph monthly sales % increase or decrease",
                 ],
             },
             {

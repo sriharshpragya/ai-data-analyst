@@ -1,8 +1,8 @@
-# 🤖 AI Data Analyst (Agent + UI + APIs)
+# 🤖 AI Data Analyst (Agent + UI + REST APIs)
 
-> Natural language SQL agent with visualization capabilities. Talk to your database in plain English. Get SQL, charts, and business insights instantly.
+<div align="center">
 
-
+**The autonomous AI agent for your database. Ask questions in plain English — get SQL, charts, and business insights instantly.**
 
 [Python](https://www.python.org/)
 [FastAPI](https://fastapi.tiangolo.com/)

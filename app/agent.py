@@ -14,6 +14,24 @@ from app.config import Config
 
 logger = structlog.get_logger()
 
+_VISUAL_HINTS = (
+    "graph", "chart", "plot", "visuali", "show me",
+)
+_PLAN_NUDGE = (
+    "Do not describe a plan. Call a tool now. "
+    "If the schema is unknown, call list_tables immediately."
+)
+_CHART_NUDGE = (
+    "The user asked for a graph. Call create_chart now. "
+    "For increase/decrease or % change, use chart_type='change' with percent "
+    "values (12.5 means +12.5%, -8.2 means -8.2%) and is_currency=false."
+)
+
+
+def _wants_visualization(query: str) -> bool:
+    q = query.lower()
+    return any(hint in q for hint in _VISUAL_HINTS)
+
 
 @dataclass
 class ToolCall:
@@ -63,29 +81,41 @@ SYSTEM_PROMPT = """You are a senior data analyst working with a PostgreSQL datab
 - describe_table: Get column details
 - get_relationships: Understand foreign keys
 - safe_run_sql: Execute SELECT queries
-- create_chart: Create visualizations (bar, horizontal_bar, line, pie)
+- create_chart: Create visualizations (bar, horizontal_bar, line, pie, change)
 
 **CRITICAL RULES**
 
 1. Always use tools via real function calls. Never write fake markers.
-2. Do not stop after planning. If you need data, call the tool in THIS turn.
-3. Prefer calling tools with little or no preamble.
-4. For unknown databases, explore with list_tables/describe_table first.
-5. After getting data, offer visualization when it helps understanding.
+2. Never stop after planning. If you need data, call the tool in THIS turn.
+3. Prefer calling tools with little or no preamble. Do not narrate next steps.
+4. For unknown databases, call list_tables in the first turn.
+5. After getting data, create a chart when the user asked for a graph or it helps.
 
 **When to create charts:**
 
 Create a chart when:
-- User asks to "see", "show", "visualize", "chart", "graph"
+- User asks to "see", "show", "visualize", "chart", "graph", "plot"
 - Data has 3+ items suitable for comparison
 - Trends over time would benefit from visualization
 - Distribution/share would be clearer as pie chart
+- User asks for increase, decrease, reduction, growth, or % change
 
 **Chart type selection:**
 - **bar**: Comparing categories
 - **horizontal_bar**: When labels are long
-- **line**: Time-series data (include current period if partial)
+- **line**: Time-series of actual values (sales, revenue)
 - **pie**: Showing distribution/share (3-6 categories ideal)
+- **change**: +/- percent increase or decrease (green up, red down)
+
+**Percentage change graphs:**
+
+When the user wants +/-, % reduction, increase, or decrease in sales:
+1. Aggregate sales by month from orders (completed orders, total_amount)
+2. Compute percent change vs the previous period with LAG, e.g.
+   (this_period - prev_period) / NULLIF(prev_period, 0) * 100
+3. Call create_chart with chart_type="change", is_currency=false
+   Values are percent numbers: 12.5 means +12.5%, -8.2 means -8.2%
+4. Then write short business insights
 
 **Workflow for chart queries:**
 
@@ -101,7 +131,7 @@ Step 4: Write business insights based on the data
 - Highlight key insights
 - Reference charts when created
 
-Current date: 2026-08-17"""
+Current date: 2026-08-18"""
 
 
 class DataAnalystAgent:
@@ -163,17 +193,36 @@ class DataAnalystAgent:
         
         start_time = time.time()
         self.conversation.append({"role": "user", "content": user_message})
+        wants_chart = _wants_visualization(user_message)
+        planning_nudges = 0
+        chart_nudges = 0
         
         for iteration in range(self.max_iterations):
             trace.iterations = iteration + 1
             
-            response = self.client.chat.completions.create(
-                model=self.model,
-                messages=self.conversation,
-                tools=self.get_tool_schemas() if self.tools_registry else None,
-                tool_choice="auto" if self.tools_registry else None,
-                max_tokens=2000,
-            )
+            force_tools = bool(self.tools_registry) and not trace.tool_calls
+            tool_choice = None
+            if self.tools_registry:
+                tool_choice = "required" if force_tools else "auto"
+            
+            try:
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=self.conversation,
+                    tools=self.get_tool_schemas() if self.tools_registry else None,
+                    tool_choice=tool_choice,
+                    max_tokens=2000,
+                )
+            except Exception:
+                if tool_choice != "required":
+                    raise
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=self.conversation,
+                    tools=self.get_tool_schemas(),
+                    tool_choice="auto",
+                    max_tokens=2000,
+                )
             
             message = response.choices[0].message
             
@@ -198,6 +247,19 @@ class DataAnalystAgent:
             self.conversation.append(assistant_msg)
             
             if not message.tool_calls:
+                has_chart = any(tc.tool_name == "create_chart" for tc in trace.tool_calls)
+                remaining = iteration < self.max_iterations - 1
+                
+                if not trace.tool_calls and planning_nudges < 1 and remaining:
+                    planning_nudges += 1
+                    self.conversation.append({"role": "user", "content": _PLAN_NUDGE})
+                    continue
+                
+                if wants_chart and not has_chart and chart_nudges < 1 and remaining:
+                    chart_nudges += 1
+                    self.conversation.append({"role": "user", "content": _CHART_NUDGE})
+                    continue
+                
                 trace.final_response = message.content or ""
                 break
             
@@ -230,6 +292,12 @@ class DataAnalystAgent:
         
         trace.completed_at = datetime.now().isoformat()
         trace.total_duration_ms = (time.time() - start_time) * 1000
+        
+        if not trace.final_response:
+            trace.final_response = (
+                "I started the analysis but ran out of steps before finishing. "
+                "Please ask the question again."
+            )
         
         return trace
     

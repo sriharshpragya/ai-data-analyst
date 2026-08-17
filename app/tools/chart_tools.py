@@ -154,6 +154,54 @@ def _create_line_chart(data, title, x_label, y_label, is_currency=True):
     return fig
 
 
+def _format_percent(value: float) -> str:
+    sign = '+' if value > 0 else ''
+    return f'{sign}{value:.1f}%'
+
+
+def _create_change_chart(data, title, x_label, y_label):
+    """Bar chart for +/- percent change: green up, red down."""
+    labels = [item['label'] for item in data]
+    values = [item['value'] for item in data]
+    colors = [
+        COLORS['success'] if v >= 0 else COLORS['danger']
+        for v in values
+    ]
+
+    fig, ax = plt.subplots()
+    bars = ax.bar(labels, values, color=colors, edgecolor='white', linewidth=1.5)
+    ax.axhline(0, color='#444444', linewidth=1)
+
+    for bar, value in zip(bars, values):
+        height = bar.get_height()
+        va = 'bottom' if value >= 0 else 'top'
+        offset = 5 if value >= 0 else -5
+        ax.annotate(
+            _format_percent(value),
+            xy=(bar.get_x() + bar.get_width() / 2, height),
+            xytext=(0, offset),
+            textcoords='offset points',
+            ha='center',
+            va=va,
+            fontsize=10,
+            fontweight='bold',
+            color=COLORS['success'] if value >= 0 else COLORS['danger'],
+        )
+
+    ax.set_title(title, pad=20)
+    ax.set_xlabel(x_label or 'Period', labelpad=10)
+    ax.set_ylabel(y_label or '% change', labelpad=10)
+    ax.yaxis.set_major_formatter(
+        ticker.FuncFormatter(lambda x, p: f'{x:+.0f}%')
+    )
+
+    if len(labels) > 5 or any(len(str(l)) > 10 for l in labels):
+        plt.xticks(rotation=30, ha='right')
+
+    plt.tight_layout()
+    return fig
+
+
 def _create_pie_chart(data, title):
     labels = [item['label'] for item in data]
     values = [item['value'] for item in data]
@@ -198,11 +246,12 @@ def create_chart(
     if not data:
         return {"error": "empty_data", "message": "Cannot create chart with no data"}
     
-    if chart_type not in ['bar', 'horizontal_bar', 'line', 'pie']:
+    supported_types = ['bar', 'horizontal_bar', 'line', 'pie', 'change']
+    if chart_type not in supported_types:
         return {
             "error": "invalid_chart_type",
             "message": f"Chart type '{chart_type}' not supported",
-            "supported_types": ['bar', 'horizontal_bar', 'line', 'pie'],
+            "supported_types": supported_types,
         }
     
     for i, item in enumerate(data):
@@ -229,6 +278,8 @@ def create_chart(
             fig = _create_line_chart(data, title, x_label, y_label, is_currency)
         elif chart_type == 'pie':
             fig = _create_pie_chart(data, title)
+        elif chart_type == 'change':
+            fig = _create_change_chart(data, title, x_label, y_label)
         
         filename = _generate_filename(chart_type, title)
         fig.savefig(filename, dpi=100, bbox_inches='tight', facecolor='white')
@@ -259,14 +310,17 @@ create_chart_schema = {
         "description": (
             "Create a chart visualization from data. "
             "Chart types: 'bar' (comparisons), 'horizontal_bar' (long labels), "
-            "'line' (trends over time), 'pie' (distributions/shares)."
+            "'line' (trends over time), 'pie' (distributions/shares), "
+            "'change' (green/red +/- percent increase or decrease). "
+            "For change charts, each value is a percent number "
+            "(12.5 means +12.5%, -8.2 means -8.2%) and is_currency must be false."
         ),
         "parameters": {
             "type": "object",
             "properties": {
                 "chart_type": {
                     "type": "string",
-                    "enum": ["bar", "horizontal_bar", "line", "pie"],
+                    "enum": ["bar", "horizontal_bar", "line", "pie", "change"],
                     "description": "Type of chart",
                 },
                 "title": {"type": "string", "description": "Chart title"},
