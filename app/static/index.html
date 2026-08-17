@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Data Analyst</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="logo">
+                    <span class="logo-icon">🤖</span>
+                    <div>
+                        <h1>AI Data Analyst</h1>
+                        <p class="subtitle">Talk to your database in plain English</p>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="resetBtn" class="btn btn-secondary" title="Reset conversation">
+                    <span>🔄</span> Reset
+                </button>
+                <a href="/docs" target="_blank" class="btn btn-secondary" title="API Documentation">
+                    <span>📖</span> API
+                </a>
+                <a href="https://github.com/sriharshpragya/ai-data-analyst" target="_blank" class="btn btn-secondary" title="GitHub">
+                    <span>⭐</span> GitHub
+                </a>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Left Panel: Chat -->
+            <section class="chat-panel">
+                <!-- Messages Area -->
+                <div id="messages" class="messages">
+                    <!-- Welcome message -->
+                    <div class="message message-agent welcome">
+                        <div class="message-avatar">🤖</div>
+                        <div class="message-content">
+                            <p>Hi! I'm your AI data analyst. I can query your database and create visualizations.</p>
+                            <p>Try asking me:</p>
+                            <div class="example-queries">
+                                <button class="example-query" data-query="How many customers do we have?">How many customers do we have?</button>
+                                <button class="example-query" data-query="Show top 5 products by revenue as a bar chart">Show top 5 products as bar chart</button>
+                                <button class="example-query" data-query="Monthly revenue trend for last 6 months as line chart">Monthly revenue trend</button>
+                                <button class="example-query" data-query="Sales distribution by category as pie chart">Category distribution</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-area">
+                    <form id="chatForm" class="input-form">
+                        <textarea 
+                            id="messageInput" 
+                            placeholder="Ask about your data... (e.g., 'Show top products by revenue')"
+                            rows="1"
+                            autocomplete="off"
+                        ></textarea>
+                        <button type="submit" id="sendBtn" class="btn btn-primary">
+                            <span id="sendIcon">Send</span>
+                            <span id="loadingIcon" class="hidden">
+                                <span class="spinner"></span>
+                            </span>
+                        </button>
+                    </form>
+                    <p class="input-hint">Press Enter to send, Shift+Enter for new line</p>
+                </div>
+            </section>
+
+            <!-- Right Panel: Charts -->
+            <section class="charts-panel">
+                <div class="charts-header">
+                    <h2>📊 Generated Charts</h2>
+                    <span id="chartCount" class="chart-count">0 charts</span>
+                </div>
+                <div id="chartsList" class="charts-list">
+                    <div class="charts-empty">
+                        <div class="empty-icon">📈</div>
+                        <p>Charts will appear here as they're generated</p>
+                        <p class="empty-hint">Ask for a "chart", "graph", or "visualization" in your questions</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Status Bar -->
+        <footer class="status-bar">
+            <div class="status-item">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">Connected</span>
+            </div>
+            <div class="status-item">
+                <span id="modelInfo">Model: -</span>
+            </div>
+            <div class="status-item">
+                <span id="tokenInfo">Iterations: 0</span>
+            </div>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
