@@ -4,19 +4,17 @@
 
 **The autonomous AI agent for your database. Ask questions in plain English — get SQL, charts, and business insights instantly.**
 
-[Python](https://www.python.org/)
-[FastAPI](https://fastapi.tiangolo.com/)
-[PostgreSQL](https://www.postgresql.org/)
-[Docker](https://www.docker.com/)
-[License: MIT](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Demo](#-demo) • [Architecture](#-architecture) • [Deployment](#-deployment)
+[Features](#-features) · [Quick Start](#-quick-start) · [Demo](#-demo) · [Architecture](#-architecture) · [Deployment](#-deployment)
 
-
+</div>
 
 ---
-
-
 
 ## 🎯 What It Does
 
@@ -39,39 +37,23 @@ An **autonomous AI agent** that turns natural language questions into SQL querie
 
 ---
 
-
-
 ## 📸 Demo
 
+<div align="center">
+  <img src="docs/screenshots/01-main-ui.png" alt="AI Data Analyst split-view UI with chat and a revenue bar chart" width="900"/>
+  <p><em>Split view: ask in plain English on the left, charts appear on the right.</em></p>
+</div>
 
+<div align="center">
+  <img src="docs/screenshots/02-multiple-charts.png" alt="AI Data Analyst with stacked charts including sales change and percent change" width="900"/>
+  <p><em>Charts stack as you keep asking — including +/- % increase and decrease.</em></p>
+</div>
 
-### Split-View Interface
-
-Main UI
-*Chat interface with real-time chart generation*
-
-### Multiple Charts
-
-Multiple Charts
-*Charts stack as you ask more questions*
-
-### Complex Analysis
-
-Complex Query
-*Multi-step reasoning with tool trace*
-
-### API Documentation
-
-API Docs
-*Full API documentation with try-it-out feature*
+Try the same queries from the [interactive API docs](http://localhost:8000/docs) at `/docs`.
 
 ---
 
-
-
 ## ✨ Features
-
-
 
 ### 🤖 Autonomous Agent
 
@@ -79,8 +61,6 @@ API Docs
 - **Schema discovery** — Works with ANY PostgreSQL database
 - **Tool composition** — Chains SQL, exploration, and visualization
 - **Reasoning traces** — See exactly how the agent thinks
-
-
 
 ### 🛡️ Production-Grade Safety
 
@@ -92,17 +72,13 @@ API Docs
 - **Automatic row limits** — Prevents memory issues
 - **Zero known vulnerabilities** — Tested against 20+ attack scenarios
 
-
-
 ### 📊 Beautiful Visualizations
 
-- **4 chart types** — Bar, horizontal bar, line, pie
+- **5 chart types** — Bar, horizontal bar, line, pie, and +/- % change
 - **Indian currency formatting** — ₹1L, ₹1.5Cr notation
 - **Business color palette** — Professional, print-friendly
 - **Automatic value labels** — Data points self-documenting
 - **Smart label rotation** — Handles long text gracefully
-
-
 
 ### 🎨 Modern Web Interface
 
@@ -111,8 +87,6 @@ API Docs
 - **Beautiful UI** — Modern, professional design
 - **Mobile responsive** — Works on all devices
 - **Example queries** — One-click to try
-
-
 
 ### 🚀 Multiple Interfaces
 
@@ -123,18 +97,12 @@ API Docs
 
 ---
 
-
-
 ## 🚀 Quick Start
-
-
 
 ### Prerequisites
 
 - Docker & Docker Compose
 - OpenAI or OpenRouter API key
-
-
 
 ### Setup (3 Steps)
 
@@ -173,11 +141,7 @@ Everything auto-configured, no manual setup needed.
 
 ---
 
-
-
 ## 💻 Usage
-
-
 
 ### Web UI
 
@@ -195,8 +159,6 @@ docker-compose exec app python -m app.main query "How many customers?"
 # System info
 docker-compose exec app python -m app.main info
 ```
-
-
 
 ### REST API
 
@@ -234,9 +196,13 @@ The system consists of four main layers:
   <img src="docs/safety-flow.svg" alt="Safety Defense Layers" width="600"/>
 </div>
 
-Every query passes through 7 defense layers before execution. Any failure blocks the query with a clear explanation to the user. All configuration via environment variables (`.env` file):
+Every query passes through 7 defense layers before execution. Any failure blocks the query with a clear explanation to the user.
 
 ---
+
+## ⚙️ Configuration
+
+All configuration is via environment variables (`.env` file).
 
 ### LLM Configuration
 
@@ -245,8 +211,6 @@ OPENROUTER_API_KEY=your-key-here
 LLM_MODEL=openai/gpt-4o-mini
 ```
 
-
-
 ### Database Configuration
 
 ```env
@@ -254,8 +218,6 @@ POSTGRES_USER=analyst
 POSTGRES_PASSWORD=analyst_password
 POSTGRES_DB=ecommerce
 ```
-
-
 
 ### Safety Configuration
 
@@ -266,8 +228,6 @@ MAX_ROWS_PER_QUERY=1000
 DEFAULT_ROWS_PER_QUERY=100
 ```
 
-
-
 ### Application Configuration
 
 ```env
@@ -276,15 +236,11 @@ LOG_LEVEL=INFO
 ENVIRONMENT=development
 ```
 
-See `.env.example` for full reference.
+See [`.env.example`](.env.example) for the full reference.
 
 ---
 
-
-
 ## 🎨 Example Queries
-
-
 
 ### Simple Analytics
 
@@ -292,16 +248,13 @@ See `.env.example` for full reference.
 - "What's our total revenue this year?"
 - "Show me all product categories"
 
-
-
 ### With Visualizations
 
 - "Show top 5 products by revenue as a bar chart"
 - "Monthly revenue trend for last 6 months as line chart"
 - "Sales distribution by category as pie chart"
 - "Top 10 customers by spending as horizontal bar chart"
-
-
+- "Graph monthly sales % increase or decrease"
 
 ### Business Insights
 
@@ -309,8 +262,6 @@ See `.env.example` for full reference.
 - "Compare this month's sales to last month"
 - "What are our best selling products in the last 30 days?"
 - "Which cities generate the most orders?"
-
-
 
 ### Complex Multi-Step
 
@@ -322,19 +273,13 @@ See [docs/examples.md](docs/examples.md) for 50+ examples.
 
 ---
 
-
-
 ## 🚀 Deployment
-
-
 
 ### Local Development
 
 ```bash
 docker-compose up
 ```
-
-
 
 ### Production Deployment
 
@@ -367,11 +312,7 @@ See [docs/deployment.md](docs/deployment.md) for platform-specific guides.
 
 ---
 
-
-
 ## 🛠️ Development
-
-
 
 ### Run Locally (without Docker)
 
@@ -403,32 +344,30 @@ cp .env.example .env
 python -m app.main serve
 ```
 
-
-
 ### Project Structure
 
+```text
 ai-data-analyst/
-├── app/ # Application code
-│ ├── config.py # Configuration
-│ ├── agent.py # AI agent
-│ ├── api.py # FastAPI endpoints
-│ ├── main.py # CLI
-│ ├── static/ # Web UI
-│ └── tools/ # Agent tools
-│ ├── sql_tools.py # Safe SQL execution
-│ ├── schema_tools.py # Schema exploration
-│ ├── chart_tools.py # Visualization
-│ └── safety/ # Safety layers
-├── database/ # DB init + seeder
-├── docs/ # Documentation
-├── charts/ # Generated charts
-├── docker-compose.yml # Full stack
-├── Dockerfile # App image
-└── requirements.txt # Python deps
+├── app/                      # Application code
+│   ├── config.py             # Configuration
+│   ├── agent.py              # AI agent
+│   ├── api.py                # FastAPI endpoints
+│   ├── main.py               # CLI
+│   ├── static/               # Web UI
+│   └── tools/                # Agent tools
+│       ├── sql_tools.py      # Safe SQL execution
+│       ├── schema_tools.py   # Schema exploration
+│       ├── chart_tools.py    # Visualization
+│       └── safety/           # Safety layers
+├── database/                 # DB init + seeder
+├── docs/                     # Documentation
+├── charts/                   # Generated charts
+├── docker-compose.yml        # Full stack
+├── Dockerfile                # App image
+└── requirements.txt          # Python deps
+```
 
 ---
-
-
 
 ## 🧪 Testing
 
@@ -455,8 +394,6 @@ Try attack scenarios (should all be blocked):
 
 ---
 
-
-
 ## 📊 Performance
 
 - **Simple query:** 1-2 seconds (1 tool call)
@@ -471,8 +408,6 @@ Try attack scenarios (should all be blocked):
 - Schema caching (roadmap)
 
 ---
-
-
 
 ## 🔐 Security
 
@@ -498,11 +433,7 @@ Try attack scenarios (should all be blocked):
 
 ---
 
-
-
 ## 💡 Use Cases
-
-
 
 ### Small Business Analytics
 
@@ -526,11 +457,7 @@ Help data analysts explore unfamiliar databases quickly.
 
 ---
 
-
-
 ## 🗺️ Roadmap
-
-
 
 ### v1.1 (Coming Soon)
 
@@ -540,8 +467,6 @@ Help data analysts explore unfamiliar databases quickly.
 - [ ] Export to Excel/PDF
 - [ ] Dashboard mode
 
-
-
 ### v2.0 (Future)
 
 - [ ] Real-time streaming responses
@@ -549,8 +474,6 @@ Help data analysts explore unfamiliar databases quickly.
 - [ ] Team workspaces
 - [ ] Custom LLM support (Ollama, Anthropic)
 - [ ] Query performance analytics
-
-
 
 ### v3.0 (Vision)
 
@@ -560,8 +483,6 @@ Help data analysts explore unfamiliar databases quickly.
 - [ ] Report scheduling
 
 ---
-
-
 
 ## 🤝 Contributing
 
@@ -578,15 +499,11 @@ Please open an issue first to discuss significant changes.
 
 ---
 
-
-
 ## 📜 License
 
 MIT License — See [LICENSE](LICENSE) for details.
 
 ---
-
-
 
 ## 👤 Author
 
@@ -601,7 +518,6 @@ Building AI agents that solve real business problems.
 
 ---
 
-
 ## 🙏 Acknowledgments
 
 Built on the shoulders of:
@@ -614,9 +530,10 @@ Built on the shoulders of:
 
 ---
 
-
+<div align="center">
 
 **⭐ Star this repo if you find it useful!**
 
 *Because your database has stories to tell.*
 
+</div>
