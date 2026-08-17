@@ -1,0 +1,45 @@
+# Version control
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+env
+ENV
+
+# IDE
+.vscode
+.idea
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local files
+.env
+.env.local
+*.log
+
+# Documentation
+docs/screenshots
+README.md
+
+# Tests
+tests
+.pytest_cache
+.coverage
+
+# Charts (generated at runtime)
+charts/*.png
+!charts/.gitkeep
+
+# Docker
+docker-compose*.yml
+Dockerfile
+.dockerignore

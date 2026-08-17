@@ -1,30 +1,126 @@
 version: '3.8'
 
 services:
+  # ============================================
+  # PostgreSQL Database
+  # ============================================
   postgres:
     image: postgres:16-alpine
-    container_name: analyst_postgres
+    container_name: analyst_db
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: analyst
-      POSTGRES_PASSWORD: analyst_password
-      POSTGRES_DB: ecommerce
+      POSTGRES_USER: ${POSTGRES_USER:-analyst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analyst_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce}
     ports:
-      - "5433:5432"  # Different port to avoid conflict with ai-cli-chatbot
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U analyst -d ecommerce"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 10s
+    networks:
+      - analyst_network
 
+  # ============================================
+  # Database Seeder (runs once)
+  # ============================================
+  db_seeder:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: analyst_seeder
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-analyst}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-analyst_password}
+      POSTGRES_DB: ${POSTGRES_DB:-ecommerce}
+    command: python database/sample_data.py
+    networks:
+      - analyst_network
+    restart: "no"
+
+  # ============================================
+  # AI Data Analyst App
+  # ============================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: analyst_app
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      db_seeder:
+        condition: service_completed_successfully
+    environment:
+      # Database
+      DATABASE_URL: postgresql://${POSTGRES_USER:-analyst}:${POSTGRES_PASSWORD:-analyst_password}@postgres:5432/${POSTGRES_DB:-ecommerce}
+      
+      # LLM
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-openai/gpt-4o-mini}
+      
+      # App
+      APP_HOST: 0.0.0.0
+      APP_PORT: 8000
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      
+      # Safety
+      QUERY_TIMEOUT_SECONDS: ${QUERY_TIMEOUT_SECONDS:-10}
+      MAX_QUERY_COST: ${MAX_QUERY_COST:-10000}
+      MAX_ROWS_PER_QUERY: ${MAX_ROWS_PER_QUERY:-1000}
+      DEFAULT_ROWS_PER_QUERY: ${DEFAULT_ROWS_PER_QUERY:-100}
+    ports:
+      - "${APP_PORT:-8000}:8000"
+    volumes:
+      - charts_data:/app/charts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    networks:
+      - analyst_network
+
+  # ============================================
+  # Adminer (Database GUI)
+  # ============================================
   adminer:
     image: adminer:latest
     container_name: analyst_adminer
+    restart: unless-stopped
     ports:
-      - "8082:8080"  # 8081 is taken by Caddy on this machine
+      - "${ADMINER_PORT:-8080}:8080"
     depends_on:
       - postgres
+    networks:
+      - analyst_network
 
+# ============================================
+# Volumes (Persistent Data)
+# ============================================
 volumes:
   postgres_data:
+    driver: local
+  charts_data:
+    driver: local
+
+# ============================================
+# Network (Container Isolation)
+# ============================================
+networks:
+  analyst_network:
+    driver: bridge
