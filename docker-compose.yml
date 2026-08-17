@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: analyst_postgres
+    environment:
+      POSTGRES_USER: analyst
+      POSTGRES_PASSWORD: analyst_password
+      POSTGRES_DB: ecommerce
+    ports:
+      - "5433:5432"  # Different port to avoid conflict with ai-cli-chatbot
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analyst -d ecommerce"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer:latest
+    container_name: analyst_adminer
+    ports:
+      - "8082:8080"  # 8081 is taken by Caddy on this machine
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
